@@ -1,0 +1,284 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Video Notes</title>
+    <link rel="stylesheet" href="sidepanel.css" />
+  </head>
+  <body>
+    <!-- HEADER -->
+    <!-- Note: the panel's own "Video Notes" title is shown by Chrome's side-panel
+         title bar, so we don't repeat a logo here. -->
+    <div class="header">
+      <div class="header-top">
+        <!-- Video info -->
+        <div class="video-info" id="videoInfo" style="display: none">
+          <div class="video-title" id="videoTitle"></div>
+          <div class="video-channel" id="videoChannel"></div>
+        </div>
+        <div class="header-actions">
+          <button
+            class="settings-btn"
+            id="settingsBtn"
+            type="button"
+            title="Open Video Notes settings"
+            aria-label="Open Video Notes settings"
+          >
+            Settings
+          </button>
+          <div
+            class="transcript-mode-control global-language-control"
+            id="transcriptModeControl"
+            role="group"
+            aria-label="Content language"
+            style="display: none"
+          >
+            <button
+              class="transcript-mode-btn active"
+              type="button"
+              data-transcript-mode="original"
+              aria-pressed="true"
+            >Original</button>
+            <button
+              class="transcript-mode-btn"
+              type="button"
+              data-transcript-mode="zh"
+              aria-pressed="false"
+            >中文</button>
+            <button
+              class="transcript-mode-btn"
+              type="button"
+              data-transcript-mode="bilingual"
+              aria-pressed="false"
+            >双语</button>
+            <span
+              class="translation-spinner"
+              id="langSpinner"
+              aria-label="Translating"
+            ></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab navigation -->
+      <div class="tabs" id="tabsNav" style="display: none">
+        <button class="tab active" data-tab="transcript">Transcript</button>
+        <button class="tab" data-tab="overview">Overview</button>
+        <button class="tab" data-tab="notes">Notes</button>
+        <button class="tab" data-tab="study">学习笔记</button>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="content" id="contentArea">
+      <!-- WELCOME STATE -->
+      <div id="welcomeState" class="welcome-container">
+        <div class="welcome-icon" aria-hidden="true"></div>
+        <div class="welcome-title">Video Notes</div>
+        <div class="welcome-desc">
+          Navigate to a YouTube video and click the extension icon to get an
+          transcript and study notes.
+        </div>
+      </div>
+
+      <!-- LOADING STATE -->
+      <div id="loadingState" style="display: none">
+        <div class="loading-container">
+          <div class="loading-bar"></div>
+          <div class="loading-text" id="loadingText">Fetching transcript</div>
+          <div class="loading-subtext" id="loadingSubtext">
+            Extracting captions from video...
+          </div>
+        </div>
+      </div>
+
+      <!-- ERROR STATE -->
+      <div id="errorState" style="display: none">
+        <div class="error-container">
+          <div class="error-icon" aria-hidden="true">!</div>
+          <div class="error-title" id="errorTitle">Error</div>
+          <div class="error-message" id="errorMessage">
+            Something went wrong.
+          </div>
+          <button class="error-btn" id="errorBtn">Try Again</button>
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div id="resultsState" style="display: none">
+        <div class="tab-panel" data-panel="study">
+          <section class="section study-section">
+            <h2 class="section-title">整理为可复习的知识</h2>
+            <p class="notes-intro">选择模板后生成中文笔记。笔记可编辑、标记重点，并导出到 Obsidian；仅在点击生成时调用 AI。</p>
+            <label for="studyTemplate">笔记模板</label>
+            <select id="studyTemplate"><option value="course">课程学习</option><option value="interview">访谈精读</option><option value="product">AI / 产品研究</option></select>
+            <div class="study-actions"><button class="enhance-btn" id="generateStudyBtn">生成笔记</button><button class="enhance-btn" id="cancelStudyBtn" disabled>停止后续分段</button></div>
+            <p id="studyStatus" role="status" aria-live="polite">生成后可编辑并导出 Markdown。</p>
+            <div class="study-actions"><button class="enhance-btn" id="highlightStudyBtn" disabled>标记选中重点</button><button class="enhance-btn" id="copyStudyBtn" disabled>复制</button><button class="enhance-btn" id="exportStudyBtn" disabled>导出 .md</button></div>
+            <label for="studyEditor">Markdown 笔记（自动保存）</label>
+            <textarea id="studyEditor" rows="22" spellcheck="false" placeholder="笔记将在这里显示。可用 ==文字== 标记重点。" disabled></textarea>
+          </section>
+        </div>
+        <!-- TAB: Transcript (default - no LLM required) -->
+        <div class="tab-panel active" data-panel="transcript">
+          <div class="section">
+            <div class="section-header transcript-section-header">
+              <div class="section-title">Full Transcript</div>
+              <div class="transcript-actions">
+                <button class="enhance-btn" id="copyTranscriptBtn">Copy</button>
+                <button class="enhance-btn" id="exportTranscriptBtn">
+                  Export
+                </button>
+              </div>
+            </div>
+            <!-- Search stays inside the Transcript tab and never changes playback. -->
+            <div class="transcript-search" role="search">
+              <svg
+                class="transcript-search-icon"
+                viewBox="0 0 20 20"
+                aria-hidden="true"
+              >
+                <circle cx="8.5" cy="8.5" r="5.5"></circle>
+                <path d="m12.5 12.5 4 4"></path>
+              </svg>
+              <input
+                class="transcript-search-input"
+                id="transcriptSearchInput"
+                type="search"
+                placeholder="Search words or phrases"
+                aria-label="Search transcript"
+                aria-controls="transcriptList"
+                autocomplete="off"
+                spellcheck="false"
+              />
+              <button
+                class="transcript-search-clear"
+                id="transcriptSearchClearBtn"
+                type="button"
+                aria-label="Clear transcript search"
+                title="Clear search"
+                hidden
+              >
+                &times;
+              </button>
+              <output
+                class="transcript-search-count"
+                id="transcriptSearchCount"
+                aria-live="polite"
+              ></output>
+              <div
+                class="transcript-search-nav"
+                role="group"
+                aria-label="Search results"
+              >
+                <button
+                  id="transcriptSearchPrevBtn"
+                  type="button"
+                  aria-label="Previous transcript match"
+                  title="Previous match (Shift + Enter)"
+                  disabled
+                >
+                  &#8593;
+                </button>
+                <button
+                  id="transcriptSearchNextBtn"
+                  type="button"
+                  aria-label="Next transcript match"
+                  title="Next match (Enter)"
+                  disabled
+                >
+                  &#8595;
+                </button>
+              </div>
+            </div>
+            <div id="transcriptList"></div>
+          </div>
+        </div>
+
+        <!-- TAB: Overview (chapters + key quotes) - requires LLM -->
+        <div class="tab-panel" data-panel="overview">
+          <!-- Chapters -->
+          <div class="section">
+            <div class="section-title">Chapters</div>
+            <ul class="chapter-list" id="chapterList">
+              <li
+                class="chapter-item"
+                style="
+                  color: var(--text-muted);
+                  cursor: default;
+                  border-color: var(--border);
+                "
+              >
+                Chapters will appear here
+              </li>
+            </ul>
+          </div>
+
+          <!-- Key Quotes -->
+          <div class="section">
+            <div class="section-title">Key Quotes</div>
+            <div id="quotesList">
+              <div
+                class="quote-item"
+                style="
+                  color: var(--text-muted);
+                  border-left-color: var(--border);
+                  cursor: default;
+                "
+              >
+                <div class="quote-text" style="font-style: normal">
+                  Quotes will be extracted when you view this tab...
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- TAB: Notes -->
+        <div class="tab-panel" data-panel="notes">
+          <div class="section">
+            <div class="section-header">
+              <div class="section-title">Saved Notes</div>
+              <div class="notes-filter">
+                <button
+                  class="enhance-btn active"
+                  id="notesFilterThis"
+                  aria-pressed="true"
+                >
+                  This Video
+                </button>
+                <button
+                  class="enhance-btn"
+                  id="notesFilterAll"
+                  aria-pressed="false"
+                >
+                  All Notes
+                </button>
+              </div>
+            </div>
+            <p class="notes-intro" id="notesIntro">
+              Move your mouse over the video and click Note to save a
+              timestamped note, or press the "n" key while the video is focused.
+            </p>
+            <div id="notesList"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Auto-scroll follow button — appears when user scrolls away from playback position -->
+    <button
+      class="follow-playback-btn"
+      id="followPlaybackBtn"
+      style="display: none"
+    >
+      Follow playback
+    </button>
+
+    <script src="settings.js"></script>
+    <script src="study.js"></script>
+    <script src="sidepanel.js"></script>
+    <script src="study-panel.js"></script>
+  </body>
+</html>

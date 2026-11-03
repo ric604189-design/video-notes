@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Video Notes 设置</title><link rel="stylesheet" href="options.css"></head>
+<body><main class="settings-shell"><header>
+<div class="settings-heading-row"><div class="eyebrow">VIDEO NOTES</div><div role="group" class="language-switch" aria-label="Interface language"><button class="language-option" type="button" data-language="zh-CN">中文</button><button class="language-option" type="button" data-language="en">English</button></div></div>
+<h1 data-i18n="heading">连接你的学习工具</h1><p class="lede" data-i18n="lede">字幕由 Supadata 获取，AI 功能由你选择的服务提供。密钥仅保存在当前 Chrome 个人资料。</p></header>
+<form id="settingsForm">
+<section class="card"><h2 data-i18n="transcriptProvider">字幕服务</h2><label for="supadataApiKey">Supadata API key</label><input id="supadataApiKey" type="password" autocomplete="off" spellcheck="false"><p class="help"><a href="https://dash.supadata.ai/auth/sign-up" target="_blank" rel="noreferrer" data-i18n="supadataLink">获取 Supadata 密钥</a></p></section>
+<section class="card"><h2 data-i18n="aiProvider">AI 服务</h2>
+<label for="aiBaseUrl" data-i18n="baseLabel">API 基础地址</label><input id="aiBaseUrl" type="url" required spellcheck="false" placeholder="https://api.example.com/v1"><p class="help" data-i18n="baseHelp">使用支持 /chat/completions 的 HTTPS 接口。保留服务所需的 /v1 等路径，不要填写完整接口路径。</p>
+<label for="aiModel" data-i18n="modelLabel">模型 ID</label><input id="aiModel" required spellcheck="false" placeholder="deepseek-v4-flash">
+<label for="aiApiKey">AI API key</label><input id="aiApiKey" type="password" autocomplete="off" spellcheck="false"><p class="help" data-i18n="keyHelp">修改服务域名后请重新填写该服务的密钥。留空也可只使用字幕功能。</p>
+<details><summary data-i18n="compatibility">接口兼容选项</summary><p class="help" data-i18n="compatibilityHelp">如果服务拒绝 JSON 模式、temperature 或 token 参数，请按服务文档调整。并非所有模型都支持 Chat Completions。</p>
+<label><input id="jsonMode" type="checkbox"> <span data-i18n="jsonLabel">请求 JSON 输出（response_format）</span></label>
+<label><input id="sendTemperature" type="checkbox"> <span data-i18n="temperatureLabel">发送 temperature 参数</span></label>
+<label for="tokenParameter" data-i18n="tokenLabel">输出长度参数</label><select id="tokenParameter"><option value="max_tokens">max_tokens</option><option value="max_completion_tokens">max_completion_tokens</option></select></details>
+<p class="privacy-note" data-i18n="privacy">点击保存时，Chrome 会请求你填写域名的访问权限。调用 AI 时字幕及视频标题会发送给该服务，请确认地址属于你信任的服务。</p><p class="help"><a href="https://platform.deepseek.com/api_keys" target="_blank" rel="noreferrer">DeepSeek API keys</a></p></section>
+<div class="form-actions"><button class="primary" type="submit" data-i18n="save">保存并授权服务域名</button></div><p id="saveStatus" role="status" aria-live="polite"></p></form>
+<section class="card data-card"><h2 data-i18n="localData">本地数据</h2><p class="help" data-i18n="dataHelp">学习笔记会自动保存。清除缓存不会删除已完成的笔记；重置前请先导出需要保留的内容。</p><div class="data-actions"><button id="clearCacheBtn" type="button" data-i18n="clearCache">清除缓存</button><button id="resetBtn" class="danger" type="button" data-i18n="reset">重置所有数据</button></div><p id="dataStatus" role="status" aria-live="polite"></p></section>
+<footer><a href="PRIVACY.md" target="_blank">Privacy</a> · <a href="https://github.com/ric604189-design/video-notes" target="_blank" rel="noreferrer">GitHub</a></footer>
+</main><script src="settings.js"></script><script src="options.js"></script></body></html>

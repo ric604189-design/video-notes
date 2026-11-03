@@ -1,0 +1,12 @@
+{
+  "name": "video-notes",
+  "version": "2.0.0",
+  "private": true,
+  "description": "YouTube learning notes and Obsidian Markdown export with configurable Chat Completions providers.",
+  "license": "MIT",
+  "scripts": {
+    "test": "node --test tests/*.test.js",
+    "check": "bash scripts/check-release.sh",
+    "package": "bash scripts/package-extension.sh"
+  }
+}
