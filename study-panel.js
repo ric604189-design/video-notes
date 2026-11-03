@@ -73,20 +73,23 @@ async function generateStudyNotes() {
   if (studyBusy) return;
   if (!currentVideoId || !currentTranscriptTimestamped) { studyElement('studyStatus').textContent = '请先获取视频字幕。'; return; }
   if (studyElement('studyEditor').value && !confirm('重新生成会覆盖当前模板的笔记和编辑。是否继续？')) return;
+  // Capture the source and lock controls before the first asynchronous operation.
   const id = currentVideoId, preset = studyElement('studyTemplate').value;
-  let parts;
-  try { parts = VN_STUDY.chunks(currentTranscriptTimestamped); } catch (error) { studyElement('studyStatus').textContent = error.message; return; }
-  const stored = await chrome.storage.local.get(YTD_SETTINGS.STORAGE_KEY);
-  const settings = YTD_SETTINGS.normalize(stored[YTD_SETTINGS.STORAGE_KEY]);
-  if (!settings.aiApiKey) { studyElement('studyStatus').textContent = '请先在 Settings 中保存 AI API 密钥。'; return; }
-  const context = { key: studyKey(id, preset), videoId: id, template: preset, title: currentVideoTitle, channel: currentChannelName, model: settings.aiModel, created: new Date().toISOString() };
-  studyContext = context;
+  const source = currentTranscriptTimestamped;
+  const title = currentVideoTitle, channel = currentChannelName;
   studyBusy = true; studyCancelled = false; setStudyControls();
-  const results = [];
-  const partialKey = `vn_partial_${id}_${preset}`;
   try {
+    const parts = VN_STUDY.chunks(source);
+    const stored = await chrome.storage.local.get(YTD_SETTINGS.STORAGE_KEY);
+    const settings = YTD_SETTINGS.normalize(stored[YTD_SETTINGS.STORAGE_KEY]);
+    if (!settings.aiApiKey) throw new Error('请先在 Settings 中保存 AI API 密钥。');
+    if (id !== currentVideoId) throw new Error('视频已切换，请在当前视频重新生成。');
+    const context = { key: studyKey(id, preset), videoId: id, template: preset, title, channel, model: settings.aiModel, created: new Date().toISOString() };
+    studyContext = context;
+    const results = [];
+    const partialKey = `vn_partial_${id}_${preset}`;
     // Do not persist credentials; compare source and non-secret provider settings only.
-    const signature = JSON.stringify({ source: currentTranscriptTimestamped, preset, base: settings.aiBaseUrl, model: settings.aiModel, json: settings.jsonMode, tokens: settings.tokenParameter, temperature: settings.sendTemperature });
+    const signature = JSON.stringify({ source, preset, base: settings.aiBaseUrl, model: settings.aiModel, json: settings.jsonMode, tokens: settings.tokenParameter, temperature: settings.sendTemperature });
     const previous = (await chrome.storage.local.get(partialKey))[partialKey];
     if (previous?.signature === signature && Array.isArray(previous.results) && previous.results.length <= parts.length) results.push(...previous.results.map((r, i) => VN_STUDY.normalize(r, parts[i])));
     for (let index = results.length; index < parts.length; index++) {

@@ -69,3 +69,9 @@ test('navigating to another video never saves the old response as the new video 
   assert.equal(env.db.vn_study_ydTeb_I0b94_course, undefined);
   assert.ok(env.db.vn_partial_ydTeb_I0b94_course);
 });
+test('double clicking generate never starts a second pipeline', async () => {
+  let calls = 0;
+  const env = environment(message => { calls++; return result(message); });
+  await Promise.all([env.sandbox.hooks.generateStudyNotes(), env.sandbox.hooks.generateStudyNotes()]);
+  assert.equal(calls, study.chunks(env.sandbox.currentTranscriptTimestamped).length);
+});
