@@ -15,8 +15,8 @@ test("release has matching versions and scoped optional API permissions", () => 
   assert.equal(manifest.options_ui.page, "options.html");
 });
 
-test("published documentation explains scope and preserves upstream credit", () => {
-  assert.match(read("README.md"), /zarazhangrui\/youtube-digest/);
+test("published documentation explains scope, links to the license and retains its notice", () => {
+  assert.match(read("README.md"), /\[LICENSE\]\(LICENSE\)/);
   assert.match(read("README.md"), /Chat Completions/);
   assert.match(read("README.zh-CN.md"), /Obsidian/);
   assert.match(read("PRIVACY.md"), /chosen AI service/);

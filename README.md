@@ -58,8 +58,6 @@ npm run package
 
 No dependency installation or build step is needed. Node.js 22+, Bash and zip are needed only for development checks and packaging. The package is written to `dist/video-notes-v2.0.0.zip`. CI runs checks and uploads the extension ZIP as a workflow artifact.
 
-## Attribution
+## License
 
-Based on [Zara Zhang's YouTube Digest](https://github.com/zarazhangrui/youtube-digest), version 1.2.0, under the MIT License. The original transcript reader, translations, overview, clips and visual foundation come from that project. Video Notes adds configurable providers and the study/Obsidian workflow. This is an independent derivative, not an official release by Zara Zhang.
-
-See [LICENSE](LICENSE). Original notices are retained.
+See [LICENSE](LICENSE).
